@@ -1,0 +1,22 @@
+{
+  "name": "gocomet-automation",
+  "version": "1.0.0",
+  "description": "Playwright UI automation for OrangeHRM",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:auth": "playwright test tests/auth",
+    "test:search": "playwright test tests/search",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
