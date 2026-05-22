@@ -1,27 +1,27 @@
 import { Locator, Page } from '@playwright/test';
 import { BasePage } from './base.page';
+import { expect } from '@playwright/test';
 
 export class DashboardPage extends BasePage {
-  readonly dashboardHeader: Locator;
-  readonly sideMenu: Locator;
+  readonly breadcrumb: Locator;
 
   constructor(page: Page) {
-    super(page, 'DashboardPage');
-    this.dashboardHeader = page.locator('.oxd-topbar-header-breadcrumb');
-    this.sideMenu = page.locator('.oxd-sidepanel');
+    super(page);
+    this.breadcrumb = page.locator('.oxd-topbar-header-breadcrumb');
   }
 
   async verifyLoaded(): Promise<void> {
-    await this.runStep('verify dashboard loaded', async () => {
-      await this.page.waitForURL(/dashboard/);
-      await this.expectVisible(this.dashboardHeader, 'Dashboard header');
-      await this.expectVisible(this.sideMenu, 'Side menu');
-    });
+    await expect(this.page).toHaveURL(/dashboard/);
+    await this.breadcrumb.waitFor({ state: 'visible' });
   }
 
   async getBreadcrumbText(): Promise<string> {
-    return this.runStep('read breadcrumb', async () => {
-      return (await this.dashboardHeader.textContent()) ?? '';
-    });
+    return (await this.breadcrumb.innerText()).trim();
+  }
+
+  async openPimEmployeeList(): Promise<void> {
+    await this.page.locator('a').filter({ hasText: 'PIM' }).click();
+    await this.page.locator('a').filter({ hasText: 'Employee List' }).click();
+    await this.page.waitForURL(/viewEmployeeList/);
   }
 }

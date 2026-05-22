@@ -3,13 +3,16 @@ pipeline {
 
     environment {
         CI = 'true'
+        API_BASE_URL = 'https://reqres.in'
+        REQRES_ENV = 'off'
+        REQRES_PUBLIC_KEY = credentials('reqres-public-key')
         BASE_URL = 'https://opensource-demo.orangehrmlive.com'
         ADMIN_USERNAME = 'Admin'
         ADMIN_PASSWORD = 'admin123'
     }
 
     options {
-        timeout(time: 30, unit: 'MINUTES')
+        timeout(time: 45, unit: 'MINUTES')
         buildDiscarder(logRotator(numToKeepStr: '10'))
     }
 
@@ -17,36 +20,41 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo 'Pulling code from GitHub'
                 checkout scm
             }
         }
 
         stage('Build') {
             steps {
-                echo 'Installing dependencies and Playwright browsers'
                 script {
                     if (isUnix()) {
-                        sh 'node -v && npm -v'
-                        sh 'npm ci'
-                        sh 'npx playwright install --with-deps chromium'
+                        sh 'npm ci && npx playwright install --with-deps chromium'
                     } else {
-                        bat 'node -v && npm -v'
-                        bat 'npm ci'
-                        bat 'npx playwright install chromium'
+                        bat 'npm ci && npx playwright install chromium'
                     }
                 }
             }
         }
 
-        stage('Test') {
+        stage('API Tests') {
             steps {
-                echo 'Running Playwright UI tests'
                 script {
                     if (isUnix()) {
-                        sh 'npm test'
+                        sh 'npm run test:api'
                     } else {
-                        bat 'npm test'
+                        bat 'npm run test:api'
+                    }
+                }
+            }
+        }
+
+        stage('UI Tests') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'npm run test:ui'
+                    } else {
+                        bat 'npm run test:ui'
                     }
                 }
             }
@@ -57,20 +65,14 @@ pipeline {
                 }
             }
         }
-
-        stage('Deploy') {
-            steps {
-                echo 'Playwright report saved in build artifacts (playwright-report/)'
-            }
-        }
     }
 
     post {
         success {
-            echo 'Pipeline completed successfully'
+            echo 'API + UI suites finished — see playwright-report artifact'
         }
         failure {
-            echo 'Pipeline failed — check console log and archived test-results'
+            echo 'Pipeline failed — check API/UI stage logs and junit.xml'
         }
     }
 }

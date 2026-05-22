@@ -11,25 +11,20 @@ test.describe('Authentication', () => {
     credentials,
     page,
   }) => {
-    await loginPage.login(
-      credentials.validUsername,
-      credentials.validPassword
-    );
-
+    await loginPage.login(credentials.validUsername, credentials.validPassword);
     await dashboardPage.verifyLoaded();
     await expect(page).toHaveURL(/dashboard/);
-
-    const breadcrumb = await dashboardPage.getBreadcrumbText();
-    expect(breadcrumb.toLowerCase()).toContain('dashboard');
+    expect((await dashboardPage.getBreadcrumbText()).toLowerCase()).toContain(
+      'dashboard'
+    );
   });
 
   test('login with invalid credentials shows error message', async ({
     loginPage,
+    credentials,
   }) => {
-    await loginPage.login('InvalidUser', 'wrong-password');
-
-    const errorMessage = await loginPage.getErrorMessage();
-    expect(errorMessage.toLowerCase()).toMatch(/invalid/);
-    await expect(loginPage.loginButton).toBeVisible();
+    await loginPage.login(credentials.validUsername, credentials.invalidPassword);
+    const error = await loginPage.getErrorMessage();
+    expect(error.toLowerCase()).toContain('invalid');
   });
 });

@@ -1,6 +1,6 @@
-export const env = {
+export const uiEnv = {
   baseUrl:
     process.env.BASE_URL ?? 'https://opensource-demo.orangehrmlive.com',
-  adminUsername: process.env.ADMIN_USERNAME ?? 'Admin',
-  adminPassword: process.env.ADMIN_PASSWORD ?? 'admin123',
+  username: process.env.ADMIN_USERNAME ?? 'Admin',
+  password: process.env.ADMIN_PASSWORD ?? 'admin123',
 };

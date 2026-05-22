@@ -7,5 +7,9 @@
     "skipLibCheck": true,
     "resolveJsonModule": true
   },
-  "include": ["framework/**/*.ts", "tests/**/*.ts", "playwright.config.ts"]
+  "include": [
+    "framework/**/*.ts",
+    "tests/**/*.ts",
+    "playwright.config.ts"
+  ]
 }

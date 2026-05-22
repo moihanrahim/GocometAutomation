@@ -2,25 +2,29 @@
 
 ## GitHub Actions
 
-[`.github/workflows/ui-tests.yml`](../.github/workflows/ui-tests.yml)
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs **both** suites in one job:
+
+- `npm test` → Playwright projects **`api`** + **`chromium`** (UI)
+
+Secrets: **`REQRES_PUBLIC_KEY`** (`pub_*` key).
 
 ## Jenkins
 
-| File | When to use |
-|------|-------------|
-| [`Jenkinsfile`](../Jenkinsfile) | Default — `agent any` (no Docker plugin required) |
-| [`jenkins-docker.groovy`](jenkins-docker.groovy) | Only if **Docker Pipeline** plugin is installed |
-| [`jenkins-pipeline.groovy`](jenkins-pipeline.groovy) | Same as root Jenkinsfile with `tools { nodejs 'NodeJS-20' }` |
+[`Jenkinsfile`](../Jenkinsfile):
 
-### Prerequisites on the Jenkins agent
+| Stage | Command | Suite |
+|-------|---------|--------|
+| API Tests | `npm run test:api` | ReqRes (`tests/api/`) |
+| UI Tests | `npm run test:ui` | OrangeHRM (`tests/auth/`, `tests/search/`) |
 
-- **Node.js 20+** and **npm** on `PATH`
-- **Git** for checkout
+### Credential (one-time)
 
-Windows agents use `bat`; Linux agents use `sh` (handled automatically).
+1. Jenkins → **Credentials** → **Secret text**
+2. **ID:** `reqres-public-key`
+3. **Secret:** your `pub_*` ReqRes key
 
-### Job configuration
+UI uses `ADMIN_USERNAME` / `ADMIN_PASSWORD` from the pipeline (demo: `Admin` / `admin123`).
 
-1. Pipeline → **Pipeline script from SCM**
-2. Repository: `https://github.com/moihanrahim/GocometAutomation.git`
-3. **Script Path:** `Jenkinsfile`
+### Artifacts
+
+JUnit: `test-results/junit.xml` · HTML: `playwright-report/`

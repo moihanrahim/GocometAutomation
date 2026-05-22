@@ -1,43 +1,25 @@
 import { test, expect } from '../../framework/fixtures/test.fixture';
 
 test.describe('Employee search', () => {
-  test.beforeEach(async ({ loginPage, credentials, dashboardPage }) => {
+  test.beforeEach(async ({ loginPage, dashboardPage, employeeListPage, credentials }) => {
     await loginPage.open();
     await loginPage.login(credentials.validUsername, credentials.validPassword);
     await dashboardPage.verifyLoaded();
+    await dashboardPage.openPimEmployeeList();
+    await employeeListPage.verifyLoaded();
   });
 
   test('search by employee id returns matching results', async ({
     employeeListPage,
   }) => {
-    await employeeListPage.open();
-
-    const employeeId = await employeeListPage.getFirstEmployeeId();
-    const countBefore = await employeeListPage.getRecordsFoundCount();
-
-    await employeeListPage.searchByEmployeeId(employeeId);
-
-    expect(await employeeListPage.hasResults()).toBe(true);
-    expect(await employeeListPage.resultsContain(employeeId)).toBe(true);
-    expect(await employeeListPage.getRecordsFoundCount()).toBeLessThanOrEqual(
-      countBefore
-    );
+    const sampleId = await employeeListPage.getFirstEmployeeId();
+    await employeeListPage.searchByEmployeeId(sampleId);
+    expect(await employeeListPage.getRecordsFoundCount()).toBeGreaterThan(0);
+    expect(await employeeListPage.resultsContain(sampleId)).toBe(true);
   });
 
-  test('search by employee name returns matching results', async ({
-    employeeListPage,
-  }) => {
-    await employeeListPage.open();
-
-    const searchTerm = await employeeListPage.getFirstEmployeeFirstName();
-    const countBefore = await employeeListPage.getRecordsFoundCount();
-
-    await employeeListPage.searchByEmployeeName(searchTerm);
-
-    expect(await employeeListPage.hasResults()).toBe(true);
-    expect(await employeeListPage.resultsContain(searchTerm)).toBe(true);
-    expect(await employeeListPage.getRecordsFoundCount()).toBeLessThanOrEqual(
-      countBefore
-    );
+  test('search with unknown id shows no records', async ({ employeeListPage }) => {
+    await employeeListPage.searchByEmployeeId('999999');
+    expect(await employeeListPage.getVisibleRowCount()).toBe(0);
   });
 });

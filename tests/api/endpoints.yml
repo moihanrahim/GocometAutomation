@@ -1,0 +1,42 @@
+# Endpoint catalog — paths, methods, payloads, expected status (no assertions)
+# Project: cool-ocean-api-67 | Base: https://reqres.in
+
+listProductRecords:
+  method: GET
+  path: /api/collections/products/records
+  query:
+    page: 1
+  expectedStatus: 200
+
+getProductRecord:
+  method: GET
+  path: /api/collections/products/records/b9a744f9-72f1-4ea9-8f6a-2c8d9d444828
+  expectedStatus: 200
+
+appUserLogin:
+  method: POST
+  path: /api/app-users/login
+  payload:
+    email: you@example.com
+  expectedStatus: 200
+
+updateUserJob:
+  method: PATCH
+  path: /api/users/2
+  payload:
+    job: QA Automation Engineer
+  expectedStatus: 200
+
+deleteUser:
+  method: DELETE
+  path: /api/users/2
+  expectedStatus: 204
+
+# Parameterized path — use {userId} in spec with parameters.userIds
+getUserById:
+  method: GET
+  path: /api/users/{userId}
+  expectedStatus: 200
+
+parameters:
+  userIds: [1, 2]
