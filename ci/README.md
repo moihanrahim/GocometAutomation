@@ -1,28 +1,10 @@
 # CI
 
-## Jenkins failure: `ERROR: reqres-public-key`
+## Jenkins — ReqRes API key
 
-That means Jenkins could not find a credential with ID **`reqres-public-key`**. The pipeline no longer loads it at startup (so UI can still run); API Tests bind it only in that stage.
+`Jenkinsfile` currently sets **`REQRES_PUBLIC_KEY`** in the `environment` block (hardcoded for demo).
 
-### Fix (pick one)
-
-#### Option A — Jenkins credential (recommended)
-
-1. **Manage Jenkins** → **Credentials** → **System** → **Global credentials (unrestricted)** → **Add Credentials**
-2. **Kind:** Secret text
-3. **Secret:** your ReqRes public key (`pub_…`)
-4. **ID:** `reqres-public-key` (must match exactly)
-5. **Description:** ReqRes API public key
-6. Save → re-run the job
-
-#### Option B — Job environment variable
-
-1. Open your pipeline job → **Configure**
-2. Check **Environment variables** (or inject via Build Environment plugin)
-3. Add: `REQRES_PUBLIC_KEY` = `pub_your_key_here`
-4. Save → re-run
-
-No credential record needed if you use this option.
+Before making the GitHub repo **public**, switch to a Jenkins **Secret text** credential (`reqres-public-key`) and remove the key from `Jenkinsfile`.
 
 ---
 
