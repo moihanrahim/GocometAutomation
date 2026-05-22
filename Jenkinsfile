@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'mcr.microsoft.com/playwright:v1.52.0-noble'
-            args '-u root:root'
-        }
-    }
+    agent any
 
     environment {
         CI = 'true'
@@ -30,16 +25,30 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Installing dependencies and Playwright browsers'
-                sh 'node -v && npm -v'
-                sh 'npm ci'
-                sh 'npx playwright install chromium'
+                script {
+                    if (isUnix()) {
+                        sh 'node -v && npm -v'
+                        sh 'npm ci'
+                        sh 'npx playwright install --with-deps chromium'
+                    } else {
+                        bat 'node -v && npm -v'
+                        bat 'npm ci'
+                        bat 'npx playwright install chromium'
+                    }
+                }
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Running Playwright UI tests'
-                sh 'npm test'
+                script {
+                    if (isUnix()) {
+                        sh 'npm test'
+                    } else {
+                        bat 'npm test'
+                    }
+                }
             }
             post {
                 always {
@@ -51,16 +60,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                echo 'Publishing test report (requires HTML Publisher plugin)'
-                publishHTML(target: [
-                    allowMissing         : true,
-                    alwaysLinkToLastBuild: true,
-                    keepAll              : true,
-                    reportDir            : 'playwright-report',
-                    reportFiles          : 'index.html',
-                    reportName           : 'Playwright HTML Report',
-                    reportTitles         : 'Playwright Report'
-                ])
+                echo 'Playwright report saved in build artifacts (playwright-report/)'
             }
         }
     }
@@ -70,7 +70,7 @@ pipeline {
             echo 'Pipeline completed successfully'
         }
         failure {
-            echo 'Pipeline failed — check Playwright artifacts and console logs'
+            echo 'Pipeline failed — check console log and archived test-results'
         }
     }
 }
