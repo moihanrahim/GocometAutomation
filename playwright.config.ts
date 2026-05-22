@@ -1,7 +1,11 @@
 import 'dotenv/config';
 import { defineConfig, devices } from '@playwright/test';
+import os from 'node:os';
 import path from 'path';
 import { apiConfig } from './framework/api';
+
+const allureResultsDir =
+  process.env.ALLURE_RESULTS_DIR ?? 'allure-results';
 
 export default defineConfig({
   testDir: './tests',
@@ -26,6 +30,24 @@ export default defineConfig({
         outputFile:
           process.env.PLAYWRIGHT_JUNIT ??
           path.join('test-results', 'junit.xml'),
+      },
+    ],
+    [
+      'allure-playwright',
+      {
+        resultsDir: allureResultsDir,
+        detail: true,
+        suiteTitle: true,
+        environmentInfo: {
+          os_platform: os.platform(),
+          os_release: os.release(),
+          node_version: process.version,
+          base_url:
+            process.env.BASE_URL ??
+            'https://opensource-demo.orangehrmlive.com',
+          api_base_url: process.env.API_BASE_URL ?? apiConfig.baseUrl,
+          ci: process.env.CI ?? 'false',
+        },
       },
     ],
   ],

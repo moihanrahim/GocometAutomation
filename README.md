@@ -18,6 +18,20 @@ cp .env.example .env   # REQRES_PUBLIC_KEY + optional UI overrides
 | `npm run test:auth` | Login tests |
 | `npm run test:search` | Employee search |
 
+## Allure report
+
+Every test run writes raw results to `allure-results/`. Build the HTML report and open it in the browser:
+
+```bash
+npm test                    # or test:api / test:ui
+npm run allure:serve        # generate + open (one step)
+# or:
+npm run allure:generate
+npm run allure:open
+```
+
+Screenshots, traces, and videos from Playwright failures are attached automatically. CI and Jenkins archive `allure-report/` after `npm run allure:generate`.
+
 ## Structure
 
 ```

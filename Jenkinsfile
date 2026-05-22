@@ -76,9 +76,16 @@ pipeline {
 
     post {
         always {
+            script {
+                if (isUnix()) {
+                    sh 'npm run allure:generate || true'
+                } else {
+                    bat 'npm run allure:generate || exit /b 0'
+                }
+            }
             junit allowEmptyResults: true, testResults: 'test-results/junit-*.xml'
-            archiveArtifacts artifacts: 'playwright-report/**,test-results/**', allowEmptyArchive: true
-            echo 'Reports: playwright-report/api/index.html and playwright-report/ui/index.html'
+            archiveArtifacts artifacts: 'playwright-report/**,test-results/**,allure-results/**,allure-report/**', allowEmptyArchive: true
+            echo 'Reports: playwright-report (api/ui), allure-report/index.html'
         }
         unstable {
             echo 'One or more tests failed — build is UNSTABLE. Check JUnit tab and HTML report artifact.'

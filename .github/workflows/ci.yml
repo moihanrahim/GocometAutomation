@@ -33,6 +33,9 @@ jobs:
           REQRES_PUBLIC_KEY: ${{ secrets.REQRES_PUBLIC_KEY }}
           REQRES_ENV: off
 
+      - run: npm run allure:generate
+        if: always()
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -45,6 +48,13 @@ jobs:
         with:
           name: test-results
           path: test-results/
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-report
+          path: allure-report/
           retention-days: 14
 
       - uses: dorny/test-reporter@v1
