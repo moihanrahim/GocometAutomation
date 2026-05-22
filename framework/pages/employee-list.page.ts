@@ -1,5 +1,6 @@
 import { Locator, Page } from '@playwright/test';
 import { BasePage } from './base.page';
+import { logger } from '../utils/logger';
 
 export class EmployeeListPage extends BasePage {
   readonly path = '/web/index.php/pim/viewEmployeeList';
@@ -12,7 +13,7 @@ export class EmployeeListPage extends BasePage {
   readonly recordCount: Locator;
 
   constructor(page: Page) {
-    super(page);
+    super(page, 'EmployeeListPage');
     this.employeeNameInput = page.getByPlaceholder('Type for hints...').first();
     this.employeeIdInput = page
       .locator('.oxd-input-group')
@@ -26,51 +27,69 @@ export class EmployeeListPage extends BasePage {
 
   async open(): Promise<void> {
     await this.goto(this.path);
-    await this.searchButton.waitFor({ state: 'visible' });
+    await this.runStep('wait for search form', () =>
+      this.searchButton.waitFor({ state: 'visible' })
+    );
   }
 
   async getRecordsFoundCount(): Promise<number> {
-    const text = (await this.recordCount.textContent()) ?? '';
-    const match = text.match(/\((\d+)\)/);
-    return match ? Number.parseInt(match[1], 10) : 0;
+    return this.runStep('read result count', async () => {
+      const text = (await this.recordCount.textContent()) ?? '';
+      const match = text.match(/\((\d+)\)/);
+      return match ? Number.parseInt(match[1], 10) : 0;
+    });
   }
 
   async getFirstEmployeeId(): Promise<string> {
-    const idCell = this.tableRows.first().locator('.oxd-table-cell').nth(1);
-    return (await idCell.innerText()).trim();
+    return this.runStep('read first employee id', async () => {
+      const idCell = this.tableRows.first().locator('.oxd-table-cell').nth(1);
+      return (await idCell.innerText()).trim();
+    });
   }
 
   async getFirstEmployeeFirstName(): Promise<string> {
-    const nameCell = this.tableRows.first().locator('.oxd-table-cell').nth(2);
-    const name = (await nameCell.innerText()).trim();
-    return name.split(/\s+/)[0];
+    return this.runStep('read first employee name', async () => {
+      const nameCell = this.tableRows.first().locator('.oxd-table-cell').nth(2);
+      const name = (await nameCell.innerText()).trim();
+      return name.split(/\s+/)[0];
+    });
   }
 
   async searchByEmployeeId(employeeId: string): Promise<void> {
-    await this.resetButton.click();
-    await this.employeeIdInput.fill(employeeId);
-    await this.searchButton.click();
-    await this.recordCount.waitFor({ state: 'visible' });
+    await this.runStep(`search by id: ${employeeId}`, async () => {
+      await this.resetButton.click();
+      await this.employeeIdInput.fill(employeeId);
+      await this.searchButton.click();
+      await this.recordCount.waitFor({ state: 'visible' });
+    });
   }
 
   async searchByEmployeeName(name: string): Promise<void> {
-    await this.resetButton.click();
-    await this.employeeNameInput.fill(name);
+    await this.runStep(`search by name: ${name}`, async () => {
+      await this.resetButton.click();
+      await this.employeeNameInput.fill(name);
 
-    const suggestion = this.page.locator('.oxd-autocomplete-option').first();
-    if (await suggestion.isVisible()) {
-      await suggestion.click();
-    }
+      const suggestion = this.page.locator('.oxd-autocomplete-option').first();
+      if (await suggestion.isVisible()) {
+        await suggestion.click();
+      } else {
+        logger.warn('No autocomplete suggestion; continuing with typed name');
+      }
 
-    await this.searchButton.click();
-    await this.recordCount.waitFor({ state: 'visible' });
+      await this.searchButton.click();
+      await this.recordCount.waitFor({ state: 'visible' });
+    });
   }
 
   async resultsContain(text: string): Promise<boolean> {
-    return (await this.tableRows.filter({ hasText: new RegExp(text, 'i') }).count()) > 0;
+    return this.runStep(`check results contain "${text}"`, async () => {
+      return (await this.tableRows.filter({ hasText: new RegExp(text, 'i') }).count()) > 0;
+    });
   }
 
   async hasResults(): Promise<boolean> {
-    return (await this.tableRows.count()) > 0;
+    return this.runStep('check table has rows', async () => {
+      return (await this.tableRows.count()) > 0;
+    });
   }
 }

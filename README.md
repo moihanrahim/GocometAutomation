@@ -35,6 +35,25 @@ npm run test:search      # search tests only
 npm run report           # open HTML report
 ```
 
+### Windows: `git` or `npm` not recognized
+
+Git and Node are installed, but a terminal opened before install may not see them. Refresh PATH:
+
+```powershell
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+git --version
+npm -v
+```
+
+Or use full paths:
+
+```powershell
+& "C:\Program Files\Git\cmd\git.exe" status
+& "C:\Program Files\nodejs\npm.cmd" test
+```
+
+Restart Cursor or open a **new** terminal for a permanent fix.
+
 ### Windows: `npm` not recognized
 
 If Node is installed but the terminal says `npm` is not found, refresh PATH (or restart Cursor):
@@ -50,6 +69,14 @@ If `npm` is blocked by execution policy, use `npm.cmd`:
 & "C:\Program Files\nodejs\npm.cmd" install
 & "C:\Program Files\nodejs\npm.cmd" test
 ```
+
+## Framework features
+
+- **Logging** — step-level logs in page objects; test start/pass/fail in fixtures (`framework/utils/logger.ts`)
+- **Reporting** — HTML, JUnit, and console reporters; CI uploads artifacts
+- **Error handling** — `AutomationError` with page/step context, Playwright timeouts, failure screenshots/video/trace
+
+See [docs/framework.md](docs/framework.md).
 
 ## Test coverage
 

@@ -3,6 +3,7 @@ import { LoginPage } from '../pages/login.page';
 import { DashboardPage } from '../pages/dashboard.page';
 import { EmployeeListPage } from '../pages/employee-list.page';
 import { env } from '../utils/env';
+import { logger } from '../utils/logger';
 
 type FrameworkFixtures = {
   loginPage: LoginPage;
@@ -33,3 +34,20 @@ export const test = base.extend<FrameworkFixtures>({
 });
 
 export { expect } from '@playwright/test';
+
+test.beforeEach(async ({}, testInfo) => {
+  logger.info(`START ${testInfo.title}`);
+});
+
+test.afterEach(async ({}, testInfo) => {
+  const status = testInfo.status ?? 'unknown';
+  if (status === 'passed') {
+    logger.info(`PASS ${testInfo.title}`);
+    return;
+  }
+  if (status === 'failed') {
+    logger.error(`FAIL ${testInfo.title}`, testInfo.error);
+    return;
+  }
+  logger.warn(`END ${testInfo.title} [${status}]`);
+});
