@@ -5,7 +5,6 @@ pipeline {
         CI = 'true'
         API_BASE_URL = 'https://reqres.in'
         REQRES_ENV = 'off'
-        REQRES_PUBLIC_KEY = credentials('reqres-public-key')
         BASE_URL = 'https://opensource-demo.orangehrmlive.com'
         ADMIN_USERNAME = 'Admin'
         ADMIN_PASSWORD = 'admin123'
@@ -39,11 +38,7 @@ pipeline {
         stage('API Tests') {
             steps {
                 script {
-                    if (isUnix()) {
-                        sh 'npm run test:api'
-                    } else {
-                        bat 'npm run test:api'
-                    }
+                    runApiTests()
                 }
             }
         }
@@ -74,5 +69,36 @@ pipeline {
         failure {
             echo 'Pipeline failed — check API/UI stage logs and junit.xml'
         }
+    }
+}
+
+/** Run API suite when REQRES_PUBLIC_KEY is available (job env or Jenkins credential). */
+def runApiTests() {
+    def execute = {
+        if (isUnix()) {
+            sh 'npm run test:api'
+        } else {
+            bat 'npm run test:api'
+        }
+    }
+
+    if (env.REQRES_PUBLIC_KEY?.trim()) {
+        echo 'Using REQRES_PUBLIC_KEY from job environment'
+        execute()
+        return
+    }
+
+    try {
+        withCredentials([string(credentialsId: 'reqres-public-key', variable: 'REQRES_PUBLIC_KEY')]) {
+            echo 'Using REQRES_PUBLIC_KEY from Jenkins credential reqres-public-key'
+            execute()
+        }
+    } catch (Exception e) {
+        error(
+            'API Tests need REQRES_PUBLIC_KEY. Fix one of:\n' +
+            '  1) Jenkins → Manage Credentials → Add Secret text, ID: reqres-public-key (your pub_* key)\n' +
+            '  2) Job → Configure → Build Environment → Environment variables → REQRES_PUBLIC_KEY=pub_...\n' +
+            "Details: ${e.message}"
+        )
     }
 }

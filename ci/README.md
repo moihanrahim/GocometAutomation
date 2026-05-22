@@ -1,30 +1,46 @@
 # CI
 
+## Jenkins failure: `ERROR: reqres-public-key`
+
+That means Jenkins could not find a credential with ID **`reqres-public-key`**. The pipeline no longer loads it at startup (so UI can still run); API Tests bind it only in that stage.
+
+### Fix (pick one)
+
+#### Option A — Jenkins credential (recommended)
+
+1. **Manage Jenkins** → **Credentials** → **System** → **Global credentials (unrestricted)** → **Add Credentials**
+2. **Kind:** Secret text
+3. **Secret:** your ReqRes public key (`pub_…`)
+4. **ID:** `reqres-public-key` (must match exactly)
+5. **Description:** ReqRes API public key
+6. Save → re-run the job
+
+#### Option B — Job environment variable
+
+1. Open your pipeline job → **Configure**
+2. Check **Environment variables** (or inject via Build Environment plugin)
+3. Add: `REQRES_PUBLIC_KEY` = `pub_your_key_here`
+4. Save → re-run
+
+No credential record needed if you use this option.
+
+---
+
+## Pipeline stages
+
+| Stage | Command |
+|-------|---------|
+| API Tests | `npm run test:api` |
+| UI Tests | `npm run test:ui` |
+
 ## GitHub Actions
 
-[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs **both** suites in one job:
+Secret: **`REQRES_PUBLIC_KEY`** in repo Settings → Secrets.
 
-- `npm test` → Playwright projects **`api`** + **`chromium`** (UI)
+## Local
 
-Secrets: **`REQRES_PUBLIC_KEY`** (`pub_*` key).
-
-## Jenkins
-
-[`Jenkinsfile`](../Jenkinsfile):
-
-| Stage | Command | Suite |
-|-------|---------|--------|
-| API Tests | `npm run test:api` | ReqRes (`tests/api/`) |
-| UI Tests | `npm run test:ui` | OrangeHRM (`tests/auth/`, `tests/search/`) |
-
-### Credential (one-time)
-
-1. Jenkins → **Credentials** → **Secret text**
-2. **ID:** `reqres-public-key`
-3. **Secret:** your `pub_*` ReqRes key
-
-UI uses `ADMIN_USERNAME` / `ADMIN_PASSWORD` from the pipeline (demo: `Admin` / `admin123`).
-
-### Artifacts
-
-JUnit: `test-results/junit.xml` · HTML: `playwright-report/`
+```bash
+cp .env.example .env
+# set REQRES_PUBLIC_KEY=pub_...
+npm test
+```

@@ -11,7 +11,6 @@ pipeline {
         CI = 'true'
         API_BASE_URL = 'https://reqres.in'
         REQRES_ENV = 'off'
-        REQRES_PUBLIC_KEY = credentials('reqres-public-key')
         BASE_URL = 'https://opensource-demo.orangehrmlive.com'
         ADMIN_USERNAME = 'Admin'
         ADMIN_PASSWORD = 'admin123'
@@ -28,7 +27,17 @@ pipeline {
             }
         }
         stage('API Tests') {
-            steps { sh 'npm run test:api' }
+            steps {
+                script {
+                    if (env.REQRES_PUBLIC_KEY?.trim()) {
+                        sh 'npm run test:api'
+                    } else {
+                        withCredentials([string(credentialsId: 'reqres-public-key', variable: 'REQRES_PUBLIC_KEY')]) {
+                            sh 'npm run test:api'
+                        }
+                    }
+                }
+            }
         }
         stage('UI Tests') {
             steps { sh 'npm run test:ui' }
