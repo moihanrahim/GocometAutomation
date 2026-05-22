@@ -10,10 +10,14 @@ Before making the GitHub repo **public**, switch to a Jenkins **Secret text** cr
 
 ## Pipeline stages
 
-| Stage | Command |
-|-------|---------|
-| API Tests | `npm run test:api` |
-| UI Tests | `npm run test:ui` |
+| Stage | Command | On failure |
+|-------|---------|------------|
+| API Tests | `npm run test:api` | Marks build **UNSTABLE**, continues |
+| UI Tests | `npm run test:ui` | Marks build **UNSTABLE** |
+
+**Post (always):** JUnit `test-results/junit.xml` + HTML report artifact `playwright-report/`.
+
+Download **playwright-report** from the build → open `index.html` to see all failures.
 
 ## GitHub Actions
 

@@ -38,42 +38,53 @@ pipeline {
         }
 
         stage('API Tests') {
+            environment {
+                PLAYWRIGHT_HTML_DIR = 'playwright-report/api'
+                PLAYWRIGHT_JUNIT = 'test-results/junit-api.xml'
+            }
             steps {
-                script {
-                    if (isUnix()) {
-                        sh 'npm run test:api'
-                    } else {
-                        bat 'npm run test:api'
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    script {
+                        if (isUnix()) {
+                            sh 'npm run test:api'
+                        } else {
+                            bat 'npm run test:api'
+                        }
                     }
                 }
             }
         }
 
         stage('UI Tests') {
-            steps {
-                script {
-                    if (isUnix()) {
-                        sh 'npm run test:ui'
-                    } else {
-                        bat 'npm run test:ui'
-                    }
-                }
+            environment {
+                PLAYWRIGHT_HTML_DIR = 'playwright-report/ui'
+                PLAYWRIGHT_JUNIT = 'test-results/junit-ui.xml'
             }
-            post {
-                always {
-                    junit allowEmptyResults: true, testResults: 'test-results/junit.xml'
-                    archiveArtifacts artifacts: 'playwright-report/**,test-results/**', allowEmptyArchive: true
+            steps {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    script {
+                        if (isUnix()) {
+                            sh 'npm run test:ui'
+                        } else {
+                            bat 'npm run test:ui'
+                        }
+                    }
                 }
             }
         }
     }
 
     post {
-        success {
-            echo 'API + UI suites finished — see playwright-report artifact'
+        always {
+            junit allowEmptyResults: true, testResults: 'test-results/junit-*.xml'
+            archiveArtifacts artifacts: 'playwright-report/**,test-results/**', allowEmptyArchive: true
+            echo 'Reports: playwright-report/api/index.html and playwright-report/ui/index.html'
+        }
+        unstable {
+            echo 'One or more tests failed — build is UNSTABLE. Check JUnit tab and HTML report artifact.'
         }
         failure {
-            echo 'Pipeline failed — check API/UI stage logs and junit.xml'
+            echo 'Build failed during checkout or build — not a test assertion failure.'
         }
     }
 }

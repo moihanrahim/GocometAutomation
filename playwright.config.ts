@@ -7,14 +7,27 @@ export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : undefined,
+  retries: process.env.CI ? 1 : 0,
+  workers: process.env.CI ? 1 : undefined,
   timeout: 60_000,
   expect: { timeout: 15_000 },
   reporter: [
     ['list'],
-    ['html', { open: 'never', outputFolder: 'playwright-report' }],
-    ['junit', { outputFile: path.join('test-results', 'junit.xml') }],
+    [
+      'html',
+      {
+        open: 'never',
+        outputFolder: process.env.PLAYWRIGHT_HTML_DIR ?? 'playwright-report',
+      },
+    ],
+    [
+      'junit',
+      {
+        outputFile:
+          process.env.PLAYWRIGHT_JUNIT ??
+          path.join('test-results', 'junit.xml'),
+      },
+    ],
   ],
   projects: [
     {
